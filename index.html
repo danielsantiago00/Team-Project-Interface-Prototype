@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Application for Employment | UNFinished Business</title>
+  <style>
+    /* colors */
+    :root {
+      --bg: #1c1c1c;
+      --ink: #f5f5f5;
+      --mute: #cfcfcf;
+      --blue: #0067c0;
+      --line: #e8e8e8;
+      --err: #ff9b8f;
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    [hidden] {
+      display: none!important;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 1rem/1.5 Calibri,"Segoe UI",system-ui,sans-serif;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      min-height: 100vh;
+    }
+
+    :focus-visible {
+      outline: 3px solid #ffd54a;
+      outline-offset: 2px;
+    }
+
+    .skip {
+      position: absolute;
+      left: -999px;
+    }
+
+    .skip:focus {
+      left: .5rem;
+      top: .5rem;
+      background: #fff;
+      color: #000;
+      padding: .5rem;
+      z-index: 9;
+    }
+
+    .side {
+      background: var(--blue);
+      color: #fff;
+      padding: 2.5rem 1.5rem 2rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin: 0 0 2rem;
+    }
+
+    .brand img {
+      width: 64px;
+      height: 64px;
+      background: #fff;
+      border-radius: 6px;
+      padding: 4px;
+      flex: none;
+    }
+
+    .side h2 {
+      font-size: 1.6rem;
+      font-weight: 400;
+      line-height: 1.15;
+      margin: 0;
+    }
+
+    .side ol {
+      margin: 0;
+      padding-left: 1.4rem;
+    }
+
+    .side li {
+      margin: .25rem 0;
+    }
+
+    .side nav button {
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: 0;
+      color: #fff;
+      font: inherit;
+      padding: .45rem .6rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .side nav button:hover {
+      background: rgba(255,255,255,.15);
+    }
+
+    .side [aria-current=step] {
+      background: rgba(255,255,255,.25);
+      font-weight: 700;
+    }
+
+    .side .bad::after {
+      content: " (needs attention)";
+      font-size: .85rem;
+    }
+
+    #prog {
+      margin-top: 1.5rem;
+    }
+
+    .wrap {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    main {
+      flex: 1;
+      padding: 2rem 2.5rem;
+      max-width: 62rem;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 400;
+      margin: 0 0 .25rem;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 400;
+      margin: 1.25rem 0 .5rem;
+    }
+
+    h2:focus {
+      outline: none;
+    }
+
+    .field {
+      display: grid;
+      grid-template-columns: 17rem 1fr;
+      gap: .2rem 1rem;
+      margin: 1rem 0;
+      align-items: start;
+    }
+
+    .lab {
+      padding-top: .4rem;
+    }
+
+    .ctl,
+    .hint,
+    .err {
+      grid-column: 2;
+    }
+
+    .hint {
+      font-size: .88rem;
+      color: var(--mute);
+    }
+
+    .hint:empty {
+      display: none;
+    }
+
+    .err {
+      color: var(--err);
+      font-weight: 700;
+      font-size: .92rem;
+    }
+
+    .err:empty {
+      display: none;
+    }
+
+    input[type=text],
+    input[type=date],
+    input[type=number],
+    select,
+    textarea {
+      width: 100%;
+      max-width: 26rem;
+      background: var(--bg);
+      color: var(--ink);
+      border: 2px solid var(--line);
+      border-radius: 2px;
+      padding: .45rem .6rem;
+      font: inherit;
+    }
+
+    textarea {
+      max-width: 32rem;
+      resize: vertical;
+    }
+
+    .invalid input,
+    .invalid select,
+    .invalid textarea {
+      border-color: var(--err);
+    }
+
+    .invalid .opts {
+      border-left: 4px solid var(--err);
+      padding-left: .6rem;
+    }
+
+    .opts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .25rem 1.25rem;
+    }
+
+    .opt {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .25rem 0;
+    }
+
+    .opt input {
+      width: 1.2rem;
+      height: 1.2rem;
+      accent-color: #4da3ff;
+    }
+
+    .waiver {
+      height: 15rem;
+      overflow: auto;
+      border: 2px solid var(--line);
+      padding: .5rem 1rem;
+      margin: .5rem 0;
+    }
+
+    .summary {
+      border: 3px solid var(--err);
+      padding: .75rem 1.25rem;
+      margin: 1rem 0;
+    }
+
+    .summary h2 {
+      margin: .25rem 0;
+      font-weight: 700;
+    }
+
+    .summary button {
+      background: none;
+      border: 0;
+      color: #ffd0ca;
+      text-decoration: underline;
+      font: inherit;
+      cursor: pointer;
+      padding: 0;
+      text-align: left;
+    }
+
+    .btns {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin: 2rem 0 .5rem;
+    }
+
+    .btn {
+      background: var(--blue);
+      color: #fff;
+      border: 2px solid #fff;
+      border-radius: 30px;
+      padding: .6rem 2.25rem;
+      font: 700 1.15rem inherit;
+      cursor: pointer;
+    }
+
+    .btn.alt {
+      background: transparent;
+    }
+
+    #submit {
+      font-size: 1.4rem;
+      padding: .7rem 3rem;
+    }
+
+    .note {
+      font-size: .9rem;
+      color: var(--mute);
+      text-align: right;
+      margin: 0;
+    }
+
+    #done {
+      border: 3px solid #7fdc9a;
+      padding: 1rem 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    footer {
+      border-top: 3px solid var(--blue);
+      margin: 0 2.5rem;
+      padding: 1rem 0;
+      font-size: .88rem;
+      color: var(--mute);
+    }
+
+    @media(max-width:800px) {
+      body {
+        grid-template-columns: 1fr;
+      }
+
+      .side {
+        position: static;
+        height: auto;
+        padding: 1.5rem;
+      }
+
+      main {
+        padding: 1.25rem;
+      }
+
+      footer {
+        margin: 0 1.25rem;
+      }
+
+      .field {
+        grid-template-columns: 1fr;
+      }
+
+      .ctl,
+      .hint,
+      .err {
+        grid-column: 1;
+      }
+
+      .lab {
+        padding-top: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to the application form</a>
+  <aside class="side">
+    <div class="brand"><!-- base 64 image encoded of UNF logo for title -->
+      <img src="data:image/png;base64,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" alt="UNF Ospreys logo"><h2>UNFinished Business</h2></div>
+    <nav aria-label="Application sections"><ol id="nav"></ol></nav>
+    <p id="prog" aria-live="polite"></p>
+  </aside>
+  <div class="wrap">
+    <main id="main">
+      <h1>Application for employment</h1>
+      <p>Fields marked with an asterisk (*) are required. You can return to any section and change your answers before you submit.</p>
+      <div id="sum" class="summary" hidden></div>
+      <form id="form" novalidate>
+        <div class="btns">
+          <button type="button" class="btn alt" id="back">Back</button>
+          <button type="button" class="btn" id="next">Next</button>
+          <button type="button" class="btn" id="submit" hidden>SUBMIT</button>
+        </div>
+        <p class="note" id="subNote" hidden>Submitting is final and cannot be undone.</p>
+      </form>
+      <section id="done" role="status" hidden>
+        <h2 id="doneH" tabindex="-1">Application submitted successfully</h2>
+        <p>Thank you, <span id="who"></span>. UNFinished Business has received your application.</p>
+        <button type="button" class="btn" id="again">Start a new application</button>
+      </section>
+      <noscript><p>This application requires JavaScript.</p></noscript>
+    </main>
+    <footer>&copy; 2026 UNFinished Business | Contact: team1@unfinishedbusiness.edu</footer>
+  </div>
+  <script>
+    // date helper
+    const pad = n => String(n).padStart(2, '0');
+    const iso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    const now = new Date();
+    const TODAY = iso(now);
+    const AGO30 = iso(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30));
+    const us = s => s.slice(5, 7) + '/' + s.slice(8) + '/' + s.slice(0, 4);
+    const $ = id => document.getElementById(id);
+    const ALL = {};
+
+    // validation + field builders
+    // textField = text box, dateField = date picker, numberField = number box
+    // radioField = pick one, checkboxField = pick any, dropdownField = menu, textareaField = multi-line box
+    // nameField, phoneField, emailField, payField = fields with a built-in format
+    const PH = /^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
+    const EM = /^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/;
+    const NM = /^[A-Za-z][A-Za-z .'-]*$/;
+    const PHM = 'Please enter a valid 10-digit telephone number, such as (904) 555-0123.';
+    const EMM = 'Please enter a valid email address, such as name@example.com.';
+    const YN = ['Yes', 'No'];
+    const textField = (id, label, o = {}) => ({ id, label, k: 't', max: 50, ...o });
+    const nameField = (id, label, o = {}) =>
+      textField(id, label, {
+        re: NM,
+        msg: label + ' may contain only letters, spaces, periods, hyphens, and apostrophes.',
+        ...o,
+      });
+    const phoneField = (id, label, o = {}) =>
+      textField(id, label, {
+        max: 25,
+        re: PH,
+        msg: PHM,
+        hint: 'Example: (904) 555-0123',
+        ...o,
+      });
+    const emailField = (id, label, o = {}) =>
+      textField(id, label, {
+        re: EM,
+        msg: EMM,
+        hint: 'Example: name@example.com',
+        ...o,
+      });
+    const dateField = (id, label, min, max, o = {}) => ({
+      id,
+      label,
+      k: 'd',
+      min,
+      max,
+      hint: `Pick from the calendar or type MM/DD/YYYY (${us(min)} to ${us(max)}).`,
+      ...o,
+    });
+    const numberField = (id, label, min, max, o = {}) => ({ id, label, k: 'n', min, max, ...o });
+    const payField = (id, label) =>
+      numberField(id, label, 0, 9999999, {
+        hint: 'Optional. Numbers only, such as 45000.',
+      });
+    const radioField = (id, label, opts, o = {}) => ({ id, label, k: 'r', opts, ...o });
+    const checkboxField = (id, label, opts, o = {}) => ({ id, label, k: 'c', opts, ...o });
+    const dropdownField = (id, label, opts, o = {}) => ({ id, label, k: 's', opts, ...o });
+    const textareaField = (id, label, o = {}) => ({ id, label, k: 'a', ...o });
+    const val = f => f.k === 'r' ? (document.querySelector(`input[name="${f.id}"]:checked`) || {}).value || '' :
+      f.k === 'c' ? [...document.querySelectorAll(`input[name="${f.id}"]:checked`)].map(x => x.value) :
+        f.k === 'k' ? ($(f.id).checked ? 'yes' : '') : $(f.id).value.trim();
+
+    // waiver text pulled from word doc
+    const WAIVER = [
+      "By signing, I agree to the points below. UNFinished Business will review my application in return.",
+      "Applying does not mean I get the job. Getting a job does not give me a contract. This is true for the job I want and for any other job. Handbooks, manuals, and benefit plans do not change this. Company policies and habits do not change either. I can quit at any time. The company can end my job at any time. Neither side needs to give notice or a reason. If I am hired, the company may change its benefits, rules, and steps. Some changes may cut my benefits.",
+      "I allow the company to check everything in this application. I must give true and full facts. If I give false facts or leave out facts, I can be fired at any time. I can be fired without warning. The company may contact my schools, past bosses, and references. I can tell the company not to call a past boss. I give up any claim against the company for making these calls.",
+      "The company has a drug and alcohol policy. It includes tests before and after I start work. I must agree to this policy to work here. I must follow it too. I must pass the tests to keep my job. I may also need to pass job-related physical exams to keep my job.",
+      "The company may ask a reporting agency for a report about me. The report may cover my credit, character, and reputation. It may also cover my personal traits and how I live. I can ask for more details in writing. The company will give them to me, as the Fair Credit Reporting Act requires.",
+      "My first 60 days of work are trial periods. During this time, either side can end the job at any time for any reason. This is also true after the trial period."
+    ];
+
+    // form definition, one object per step
+    // req:1 = required, max = character limit, hint = help text, chk = extra rule
+    const SECTIONS = [
+      {
+        t: 'Personal Information',
+        f: [
+          dateField('appDate', 'Application date', '1955-01-01', TODAY, { req: 1 }),
+          nameField('first', 'First name', { req: 1 }),
+          nameField('middle', 'Middle name'),
+          nameField('last', 'Last name', { req: 1 }),
+          radioField('otherName', 'Have you ever worked for or attended school under another name?', YN, {
+            req: 1,
+          }),
+          textField('address', 'Current address', {
+            req: 1,
+            hint: 'Street, city, state, and ZIP code.',
+          }),
+          textField('howLong', 'How long have you lived at your current address?', {
+            req: 1,
+            n: 'Time at current address',
+            hint: 'Example: 3 years, 2 months',
+          }),
+          textField('ssn', 'SSN', {
+            req: 1,
+            max: 11,
+            re: /^\d{3}-\d{2}-\d{4}$/,
+            msg: 'Please enter a valid 9-digit SSN in the format XXX-XX-XXXX.',
+            hint: 'Format: XXX-XX-XXXX',
+          }),
+          phoneField('phone', 'Telephone', { req: 1 }),
+          phoneField('mobile', 'Mobile phone'),
+          emailField('email', 'Email address', { req: 1 }),
+          radioField('over18', 'Are you over 18?', YN, {
+            req: 1,
+            chk: v => v === 'No' ? 'You must be at least 18 years old to submit this application.' : '',
+          }),
+        ],
+      },
+
+      {
+        t: 'Job Details',
+        f: [
+          textField('position', 'Position applied for', { req: 1 }),
+          textField('desired', 'Employment desired', {
+            req: 1,
+            hint: 'Example: Full-time, part-time, or seasonal.',
+          }),
+          dateField('avail', 'Date available for work', TODAY, '2030-01-01', { req: 1 }),
+          numberField('hours', 'How many hours weekly can you work?', 1, 99, {
+            req: 1,
+            int: 1,
+            n: 'Weekly hours',
+            hint: 'Whole number from 1 to 99.',
+          }),
+          numberField('salary', 'Desired salary (US dollars)', 0, 9999999, {
+            hint: 'Optional. Numbers only, such as 45000.',
+          }),
+          checkboxField('days', 'Days available to work', ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], {
+            req: 1,
+            reqMsg: 'Error: Select at least one day you are available to work.',
+          }),
+          radioField('nights', 'Can you work nights?', YN, { req: 1 }),
+          radioField('transport', 'Do you have reliable transportation to work?', YN, { req: 1 }),
+        ],
+      },
+
+      {
+        t: 'References',
+        f: [
+          nameField('refName', 'Reference name', { req: 1 }),
+          textField('refTitle', 'Reference title'),
+          textField('refCompany', 'Reference company'),
+          textField('refAddress', 'Reference address'),
+          phoneField('refPhone', 'Reference telephone', { req: 1 }),
+          emailField('refEmail', 'Reference email address'),
+        ],
+      },
+
+      {
+        t: 'Education',
+        f: [
+          dropdownField('schoolType', 'School type', ['High school', 'GED', 'Vocational or technical school', 'College or university', 'Graduate school'], {
+            req: 1,
+          }),
+          textField('degree', 'Highest diploma, degree, or certificate earned', {
+            req: 1,
+            n: 'Highest diploma, degree, or certificate',
+          }),
+          textField('school', 'School name', { req: 1 }),
+          textField('schoolCity', 'City and state', { hint: 'Example: Jacksonville, FL' }),
+          textField('major', 'Major, degree, or certificate'),
+          dateField('grad', 'Graduation date', '1925-01-01', TODAY),
+          textField('eduExtra', 'Any additional information'),
+        ],
+      },
+
+      {
+        t: 'Work Experience',
+        f: [
+          textField('employer', 'Employer name', { req: 1 }),
+          textField('wAddress', 'Employer address'),
+          textField('wCity', 'City'),
+          textField('wState', 'State', { re: /^[A-Za-z .]+$/, msg: 'State may contain letters only.' }),
+          textField('wZip', 'ZIP code', {
+            max: 10,
+            re: /^\d{5}(-\d{4})?$/,
+            msg: 'Please enter a valid ZIP code, such as 32224 or 32224-1234.',
+            hint: 'Example: 32224',
+          }),
+          phoneField('wPhone', 'Employer telephone'),
+          emailField('wEmail', 'Employer email address'),
+          nameField('supervisor', 'Name of last supervisor'),
+          textField('jobTitle', 'Your last job title', { req: 1 }),
+          textField('reason', 'Reason for leaving'),
+          dateField('from', 'Employment dates: From', '1925-01-01', TODAY, { req: 1 }),
+          dateField('to', 'Employment dates: To', '1925-01-01', TODAY, {
+            req: 1,
+            chk: v => {
+              const a = val(ALL.from);
+              return a && v < a ? 'In your Work Experience, the “To” date cannot be earlier than the “From” date.' : '';
+          },
+          }),
+          payField('payStart', 'Pay or salary: Start (US dollars)'),
+          payField('payEnd', 'Pay or salary: Final (US dollars)'),
+          textareaField('duties', 'Duties performed, skills used, and advancements and promotions earned', {
+            req: 1,
+            max: 100,
+            n: 'Duties performed',
+            hint: 'Up to 100 characters.',
+          }),
+        ],
+      },
+
+      {
+        t: 'Additional Skills and Experience',
+        f: [
+          textField('military', 'Job-related military training or skills acquired', {
+            max: 100,
+            hint: 'Optional. Do not include the type of discharge.',
+          }),
+          textareaField('extra', 'Additional skills, experiences, and other important information', {
+            words: 500,
+            hint: 'Optional. Up to 500 words.',
+          }),
+        ],
+      },
+
+      {
+        t: 'Application Acknowledgment and Waiver',
+        waiver: 1,
+        f: [
+          {
+            id: 'agree',
+            k: 'k',
+            label: 'I have read the entire waiver and I agree to it.',
+            n: 'Agreement',
+            req: 1,
+            reqMsg: 'Error: You must read the entire waiver and check the agreement box to submit your application.',
+          },
+          textField('sign', 'Signature of applicant', {
+            req: 1,
+            re: NM,
+            msg: 'Please type your full name using letters only.',
+            hint: 'Type your full name. It must include the first and last name you entered.',
+            reqMsg: 'Error: You must provide a signature and date on the Application Acknowledgment to submit your application.',
+            chk: v => {
+              const s = v.toLowerCase(), a = val(ALL.first).toLowerCase(), b = val(ALL.last).toLowerCase();
+              return a && b && !(s.includes(a) && s.includes(b)) ? 'Your signature must include the first and last name you entered in Personal Information.' : '';
+          },
+          }),
+          dateField('signed', 'Date signed', AGO30, TODAY, {
+            req: 1,
+            reqMsg: 'Error: You must provide a signature and date on the Application Acknowledgment to submit your application.',
+          }),
+        ],
+      },
+    ];
+
+    // builds the html for one field
+
+    function field(f) {
+      const id = f.id, dsc = `aria-describedby="${id}-h ${id}-e"`, at = `id="${id}" name="${id}" ${dsc}${f.req ? ' aria-required="true"' : ''}`;
+      let c = '', hint = f.hint || '';
+      if (f.k === 't')
+        c = `<input type="text" ${at} maxlength="${f.max}"${id === 'ssn' ? ' autocomplete="off"' : ''}${/phone|Phone|mobile/.test(id) ? ' inputmode="tel"' : ''}>`;
+      else if (f.k === 'd')
+        c = `<input type="date" ${at} min="${f.min}" max="${f.max}">`;
+      else if (f.k === 'n')
+        c = `<input type="number" ${at} min="${f.min}" max="${f.max}" step="${f.int ? 1 : 'any'}">`;
+      else if (f.k === 's')
+        c = `<select ${at}><option value="">Select one</option>${f.opts.map(o => `<option>${o}</option>`).join('')}</select>`;
+      else if (f.k === 'a') {
+        c = `<textarea ${at} rows="4"${f.max ? ` maxlength="${f.max}"` : ''}></textarea>`;
+        hint += `<span id="${id}-c" style="display:block"></span>`;
+      }
+      else if (f.k === 'k')
+        c = `<label class="opt"><input type="checkbox" ${at} disabled> ${f.label}</label>`;
+      else
+        c = `<div class="opts" role="group" aria-labelledby="${id}-l" ${dsc}>${f.opts.map(o => `<label class="opt"><input type="${f.k === 'r' ? 'radio' : 'checkbox'}" name="${id}" value="${o}"> ${o}</label>`).join('')}</div>`;
+      const star = f.req ? '<span aria-hidden="true"> *</span>' : '';
+      const lab = /[rck]/.test(f.k) ? `<span class="lab" id="${id}-l">${f.k === 'k' ? 'Agreement' : f.label}${star}</span>` : `<label class="lab" id="${id}-l" for="${id}">${f.label}${star}</label>`;
+      return `<div class="field" data-f="${id}">${lab}<div class="ctl">${c}</div><div class="hint" id="${id}-h">${hint}</div><div class="err" id="${id}-e"></div></div>`;
+    }
+
+    // builds each step and its sidebar button
+    const form = $('form');
+    const btns = form.querySelector('.btns');
+    let cur = 0;
+    SECTIONS.forEach((s, i) => {
+      let h = `<section class="step" id="step${i}" hidden><h2 id="h${i}" tabindex="-1">${s.t}</h2>`;
+      if (s.waiver)
+        h += `<div class="waiver" id="waiver" tabindex="0" role="region" aria-label="Waiver text">${WAIVER.map(p => `<p>${p}</p>`).join('')}</div><p class="hint" id="wHint">Scroll to the end of the waiver to enable the agreement checkbox.</p>`;
+      s.f.forEach(f => {
+        ALL[f.id] = f;
+        f.s = i;
+        h += field(f);
+      });
+      btns.insertAdjacentHTML('beforebegin', h + '</section>');
+      $('nav').insertAdjacentHTML('beforeend', `<li><button type="button" data-s="${i}">${s.t}</button></li>`);
+    });
+
+    // validation, returns an error message or '' if the value is fine
+
+    function check(f) {
+      const v = val(f), n = f.n || f.label, empty = Array.isArray(v) ? !v.length : v === '';
+      if ((f.k === 'd' || f.k === 'n') && $(f.id).validity.badInput)
+        return `Error: ${n} is not valid. ${f.k === 'd' ? 'Use the calendar or enter MM/DD/YYYY.' : 'Enter numbers only.'}`;
+      if (empty)
+        return f.req ? (f.reqMsg || (/[rcs]/.test(f.k) ? `Error: Please select an answer for “${n}”.` : `Error: ${n} is required.`)) : '';
+      if (f.re && !f.re.test(v))
+        return 'Error: ' + f.msg;
+      if (f.k === 'd') {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(v) || isNaN(Date.parse(v)))
+          return `Error: ${n} is not a valid date.`;
+        if (v < f.min || v > f.max)
+          return `Error: ${n} must be between ${us(f.min)} and ${us(f.max)}.`;
+      }
+      if (f.k === 'n') {
+        const x = +v;
+        if (isNaN(x) || x < f.min || x > f.max)
+          return `Error: ${n} must be a number between ${f.min} and ${f.max}.`;
+        if (f.int && !Number.isInteger(x))
+          return `Error: ${n} must be a whole number.`;
+      }
+      if (f.words && v.split(/\s+/).length > f.words)
+        return `Error: ${n} must be ${f.words} words or fewer.`;
+      const m = f.chk && f.chk(v);
+      return m ? 'Error: ' + m : '';
+    }
+
+    // shows or clears the error under a field
+    function show(f, m) {
+      $(f.id + '-e').textContent = m;
+      document.querySelectorAll(`[name="${f.id}"]`).forEach(x => x.setAttribute('aria-invalid', m ? 'true' : 'false'));
+      form.querySelector(`[data-f="${f.id}"]`).classList.toggle('invalid', !!m);
+    }
+    const run = (i, sh) => SECTIONS[i].f.map(f => ({ f, m: check(f) })).filter(e => (sh && show(e.f, e.m), e.m));
+
+    // error list at the top of the page
+    function summary(errs, title) {
+      const s = $('sum');
+      s.innerHTML = `<h2 id="sumH" tabindex="-1">${title}</h2><ul>${errs.map(e => `<li><button type="button" data-g="${e.f.id}">${SECTIONS[e.f.s].t}: ${e.m.replace(/^Error: /, '')}</button></li>`).join('')}</ul>`;
+      s.hidden = false;
+      $('sumH').focus();
+    }
+
+    // turns on the agree checkbox once the waiver is scrolled to the end
+    function sc() {
+      const w = $('waiver');
+      if (w.scrollTop + w.clientHeight >= w.scrollHeight - 4) {
+        $('agree').disabled = false;
+        $('wHint').textContent = 'You reached the end of the waiver. You can now check the agreement box.';
+      }
+    }
+
+    // moving between steps
+    function go(i, focus = true) {
+      cur = i;
+      const last = i === SECTIONS.length - 1;
+      document.querySelectorAll('.step').forEach((s, j) => s.hidden = j !== i);
+      document.querySelectorAll('#nav button').forEach((b, j) => b.setAttribute('aria-current', j === i ? 'step' : 'false'));
+      $('back').hidden = i === 0;
+      $('next').hidden = last;
+      $('submit').hidden = !last;
+      $('subNote').hidden = !last;
+      $('prog').textContent = `Step ${i + 1} of ${SECTIONS.length}`;
+      $('sum').hidden = true;
+      if (last)
+        sc();
+      if (focus) {
+        $('h' + i).focus();
+        window.scrollTo(0, 0);
+      }
+    }
+
+    // button handlers
+    $('back').onclick = () => go(cur - 1);
+    $('next').onclick = () => {
+      const e = run(cur, true);
+      e.length ? summary(e, `Please fix ${e.length} problem${e.length > 1 ? 's' : ''} on this page before continuing.`) : go(cur + 1);
+    };
+    $('nav').onclick = e => {
+      const b = e.target.closest('button');
+      if (b)
+        go(+b.dataset.s);
+    };
+    $('sum').onclick = e => {
+      const g = e.target.dataset.g;
+      if (!g)
+        return;
+      go(ALL[g].s, false);
+      ($(g) || document.querySelector(`[name="${g}"]`)).focus();
+    };
+
+    // submit, checks every step then shows errors or the success message
+    $('submit').onclick = () => {
+      let all = [];
+      SECTIONS.forEach((s, i) => {
+        const e = run(i, true);
+        all = all.concat(e);
+        document.querySelectorAll('#nav button')[i].classList.toggle('bad', e.length > 0);
+      });
+      if (all.length)
+        return summary(all, `Your application was not submitted. Please fix ${all.length} problem${all.length > 1 ? 's' : ''} below.`);
+      $('who').textContent = val(ALL.first);
+      form.hidden = true;
+      $('sum').hidden = true;
+      $('done').hidden = false;
+      $('doneH').focus();
+    };
+    $('again').onclick = () => location.reload();
+
+    // feedback while the user types
+    const live = f => {
+      show(f, check(f));
+      if (f.id === 'from' && $('to').value)
+        show(ALL.to, check(ALL.to));
+    };
+
+    form.addEventListener('focusout', e => {
+      const f = ALL[e.target.name];
+      if (f && /[tdnsa]/.test(f.k))
+        live(f);
+    });
+
+    form.addEventListener('change', e => {
+      const f = ALL[e.target.name];
+      if (f && /[rckds]/.test(f.k))
+        live(f);
+    });
+
+    form.addEventListener('input', e => {
+      const f = ALL[e.target.name];
+      if (f && f.k === 'a') {
+        const v = e.target.value.trim();
+        $(f.id + '-c').textContent = f.words ? `${v ? v.split(/\s+/).length : 0} / ${f.words} words` : `${e.target.value.length} / ${f.max} characters`;
+      }
+    });
+    $('waiver').addEventListener('scroll', sc);
+
+    // start on step 1
+    go(0, false);
+  </script>
+</body>
+</html>
